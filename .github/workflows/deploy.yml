@@ -24,8 +24,11 @@ jobs:
           cache: maven
           server-id: github
           settings-path: ${{ github.workspace }}
-      - name: Build
-        run: ./mvnw -B clean flyway:migrate --file pom.xml
-        env:
-          USER_NAME: ${{ secrets.GH_PACKAGE_USER }}
-          ACCESS_TOKEN: ${{ secrets.GH_PACKAGE_TOKEN }}
+      - name: Run Flyway migrations
+        run: |
+          ./mvnw \
+            -Dflyway.url="${{ secrets.DB_URL }}" \
+            -Dflyway.user="${{ secrets.DB_USER }}" \
+            -Dflyway.password="${{ secrets.DB_PASSWORD }}" \
+            -Dflyway.schemas="${{ secrets.DB_SCHEMA }}" \
+            flyway:migrate
