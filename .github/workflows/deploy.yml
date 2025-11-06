@@ -1,0 +1,31 @@
+# This workflow will build a package then publish to GitHub Maven Access controlled repository
+
+name: Release
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the Infrastructure
+        run: docker compose up -d
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+          server-id: github
+          settings-path: ${{ github.workspace }}
+      - name: Build
+        run: ./mvnw -B clean flyway:migrate --file pom.xml
+        env:
+          USER_NAME: ${{ secrets.GH_PACKAGE_USER }}
+          ACCESS_TOKEN: ${{ secrets.GH_PACKAGE_TOKEN }}
